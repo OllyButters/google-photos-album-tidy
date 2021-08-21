@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+import datetime
 import os.path
 import pickle
 import pprint
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+
+# Needs credentials.json from google before running
 
 # My photos can be in:
 # 1) One or more of my albums
@@ -14,9 +17,6 @@ from google.auth.transport.requests import Request
 
 # This script gets the IDs of ALL of my photos and checks to see if it is in AT LEAST ONE album.
 # If it's not then it outputs an HTML file with links to each.
-
-
-# https://medium.com/@najeem/analyzing-my-google-photos-library-with-python-and-pandas-bcb746c2d0f2
 
 scopes = ['https://www.googleapis.com/auth/photoslibrary.readonly']
 
@@ -31,10 +31,15 @@ if os.path.exists('token.pickle'):
 
 # If there are no (valid) credentials available, let the user log in.
 if not credentials or not credentials.valid:
-    os.remove('token.pickle')
+    if os.path.exists('token.pickle'):
+        os.remove('token.pickle')
 
-    flow = InstalledAppFlow.from_client_secrets_file('credentials.json', scopes)
-    credentials = flow.run_local_server(port=0)
+    if credentials and credentials.expired and credentials.refresh_token:
+        credentials.refresh(Request())
+    else:
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'credentials.json', scopes)
+        credentials = flow.run_local_server(port=0)
 
     # Save the credentials for the next run
     with open('token.pickle', 'wb') as token:
@@ -152,9 +157,6 @@ for this_album_id in all_albums_ids:
             these_photos = results.get('mediaItems', [])
             nextpagetoken = results.get('nextPageToken', '')
 
-            # print("$$$$$$$$$$$$$$$$$$$$$$\n" + nextpagetoken + "\n$$$$$$$$$$$$$$$$$$$$")
-            # print("Results for this albumId " + str(len(results['mediaItems'])))
-
             all_photos_in_all_albums.extend(results['mediaItems'])
 
     except:
@@ -184,25 +186,28 @@ print(str(len(uncategorised)) + " photos not in any albums.")
 with open('summary.html', 'w') as html:
     html.write("<html><head></head><body>")
 
+    html.write("Updated: " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
     html.write(str(len(all_my_photos_ids)) + " my photos.<br/>")
     html.write(str(len(set(all_my_photos_ids))) + " unique my photos.<br/>")
 
     html.write(str(len(my_albums)) + " my albums found.<br/>")
     html.write(str(len(shared_albums)) + " shared albums found.<br/>")
 
-    html.write(str(len(all_photos_in_all_albums)) + " photos in all albums.<br/>")
-    html.write(str(len(uncategorised)) + " photos not in any albums.<br/>")
+    html.write(str(len(all_photos_in_all_albums)) + " all photos in all albums (mine and shared).<br/>")
+    html.write(str(len(uncategorised)) + " my photos not in any albums (mine or shared).<br/>")
 
     # My albums
     html.write("<h1>My albums</h1>")
     html.write("<table>")
     photo_count = 0
 
+    html.write("<th><td>Album name</td><td>Number of photos</td></th>")
     for this_album in sorted([item for item in my_albums if 'title' in item.keys()], key=lambda item: item['title']):
         photo_count += int(this_album['mediaItemsCount'])
-        html.write("<tr><td>" + this_album['title'] + "</td><td>" + this_album['mediaItemsCount'] + "</td><td>" + this_album['id'] + "</td></tr>")
+        html.write("<tr><td>" + this_album['title'] + "</td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
 
-    html.write("<tr><td></td><td>" + str(photo_count) + "</td><td></td></tr>")
+    html.write("<tr><td></td><td><strong>" + str(photo_count) + "</strong></td></tr>")
     html.write("<table>")
 
     # Shared albums
@@ -211,13 +216,14 @@ with open('summary.html', 'w') as html:
     photo_count = 0
     pprint.pprint(shared_albums)
 
+    html.write("<th><td>Album name</td><td>Number of photos</td></th>")
     for this_album in sorted([item for item in shared_albums if 'title' in item.keys()], key=lambda item: item['title']):
         try:
             photo_count += int(this_album['mediaItemsCount'])
-            html.write("<tr><td>" + this_album['title'] + "</td><td>" + this_album['mediaItemsCount'] + "</td><td>" + this_album['id'] + "</td></tr>")
+            html.write("<tr><td>" + this_album['title'] + "</td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
         except:
             pass
-    html.write("<tr><td></td><td>" + str(photo_count) + "</td><td></td></tr>")
+    html.write("<tr><td></td><td><strong>" + str(photo_count) + "</strong></td></tr>")
     html.write("<table>")
 
     html.write("<h1>Photos not in any album</h1>")
