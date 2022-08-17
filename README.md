@@ -14,3 +14,8 @@ Just run the photo_summary.py file, it will ask you to autheticate the first tim
 ## Notes
 
 - It doesn't know if photos are in multiple albums.
+- Sometimes if the token has expired it will fail the first time it is run. Just rerun it.
+
+## To do
+
+- Add thumbnail images to the summary.

@@ -186,7 +186,7 @@ print(str(len(uncategorised)) + " photos not in any albums.")
 with open('summary.html', 'w') as html:
     html.write("<html><head></head><body>")
 
-    html.write("Updated: " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    html.write("Updated: " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "<br/>")
 
     html.write(str(len(all_my_photos_ids)) + " my photos.<br/>")
     html.write(str(len(set(all_my_photos_ids))) + " unique my photos.<br/>")
@@ -202,7 +202,7 @@ with open('summary.html', 'w') as html:
     html.write("<table>")
     photo_count = 0
 
-    html.write("<th><td>Album name</td><td>Number of photos</td></th>")
+    html.write("<tr><th>Album name</th><th>Number of photos</th></tr>")
     for this_album in sorted([item for item in my_albums if 'title' in item.keys()], key=lambda item: item['title']):
         photo_count += int(this_album['mediaItemsCount'])
         html.write("<tr><td>" + this_album['title'] + "</td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
@@ -216,7 +216,7 @@ with open('summary.html', 'w') as html:
     photo_count = 0
     pprint.pprint(shared_albums)
 
-    html.write("<th><td>Album name</td><td>Number of photos</td></th>")
+    html.write("<tr><th>Album name</th><th>Number of photos</th></tr>")
     for this_album in sorted([item for item in shared_albums if 'title' in item.keys()], key=lambda item: item['title']):
         try:
             photo_count += int(this_album['mediaItemsCount'])
