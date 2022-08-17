@@ -1,11 +1,19 @@
 # google-photos
 
+Olly Butters
+
 Want to get a summary of albums (mine and shared) and a list of photos which are not in any album (mine or shared).
 
 ## Prerequisites
 
 - Set up API access on your google account.
 - Put the credentials.json file in the same directory as this script.
+
+## Authentication
+
+This code is set up to use the google-photos-api library. It needs to be set up in the developers console - [https://console.developers.google.com/](https://console.developers.google.com/). You need the credentials.json file which can be downloaded from the Credentials page in the developers console. The credentials.json file should be placed in the same directory as this script, but it is secret, so don't share it.
+
+It uses OAuth2 for authentication.
 
 ## Running
 
@@ -15,6 +23,10 @@ Just run the photo_summary.py file, it will ask you to autheticate the first tim
 
 - It doesn't know if photos are in multiple albums.
 - Sometimes if the token has expired it will fail the first time it is run. Just rerun it.
+
+- https://developers.google.com/photos/library/guides/overview?hl=en_GB
+- https://developers.google.com/photos/library/reference/rest?hl=en_GB
+- 
 
 ## To do
 
