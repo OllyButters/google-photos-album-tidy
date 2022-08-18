@@ -2,7 +2,7 @@
 
 Olly Butters
 
-Want to get a summary of albums (mine and shared) and a list of photos which are not in any album (mine or shared).
+Get a list of albums (mine and shared) with the count of photos in each. Also get a list of photos which are not in any album (mine or shared), with a link to them so they can be added to an album.
 
 ## Prerequisites
 
@@ -17,17 +17,18 @@ It uses OAuth2 for authentication.
 
 ## Running
 
-Just run the photo_summary.py file, it will ask you to autheticate the first time, then it will work through all your photos, figure out what is in what album, then generate a output html file (summary.html) which has the summary in it. The links to the photos not in any albums will take you directly to the photo in google photos, where you can then add it to a new album. The next time it runs it will get the metadata again so the photo will not appear in the list.
+Just run the photo_summary.py file, it will ask you to autheticate the first time, then it will work through all your photos, figure out what is in what album, then generate a output html file (summary.html) which has the summary in it. The links to the photos not in any albums will take you directly to the photo in google photos, where you can then add it to a new album. The next time it runs it will get all the metadata again so the photos you've added to albums will not appear in the list.
 
 ## Notes
 
 - It doesn't know if photos are in multiple albums.
 - Sometimes if the token has expired it will fail the first time it is run. Just rerun it.
 
+## Useful links
+
 - https://developers.google.com/photos/library/guides/overview?hl=en_GB
 - https://developers.google.com/photos/library/reference/rest?hl=en_GB
-- 
 
 ## To do
 
-- Add thumbnail images to the summary.
+- Add flag to my albums to show if they are shared.
