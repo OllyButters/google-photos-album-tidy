@@ -58,7 +58,6 @@ nextpagetoken = None
 
 print("Getting metadata about my albums...")
 while nextpagetoken != '':
-    # print("\nNumber of items processed:" + str(len(my_albums)))
 
     # dict with albums : list of dicts
     results = google_photos.albums().list(pageSize=50, pageToken=nextpagetoken).execute()
@@ -72,7 +71,6 @@ print(str(len(my_albums)) + " my albums found.\n")
 for this_album in my_albums:
     my_albums_ids.append(this_album['id'])
     my_albums_titles.append(this_album['title'])
-    # print(this_album['title'] + " / " + this_album['id'])
 
 
 ##################################################################
@@ -85,7 +83,6 @@ print("Getting metadata about shared albums...")
 nextpagetoken = None
 
 while nextpagetoken != '':
-    # print("\n\nNumber of items processed:" + str(len(shared_albums)))
 
     # dict with sharedAlbums : list of dicts
     results = google_photos.sharedAlbums().list(pageSize=50, pageToken=nextpagetoken).execute()
@@ -99,10 +96,8 @@ print(str(len(shared_albums)) + " shared albums found.\n")
 for this_album in shared_albums:
     # A title is not always present
     try:
-        # print(this_album)
         shared_albums_ids.append(this_album['id'])
         shared_albums_titles.append(this_album['title'])
-        # print(this_album['title'] + " / " + this_album['id'])
     except:
         pass
 
@@ -122,25 +117,25 @@ all_albums_ids = list(set(my_albums_ids + shared_albums_ids))
 all_my_photos = []      # List of dicts with all metadata
 all_my_photos_ids = []  # List of IDs
 nextpagetoken = None
-status_counter = 0
+results_per_page = 100
 
 print("Getting metadata about my photos...")
 while nextpagetoken != '':
-    status_counter += 1
-    if status_counter % 100 == 0:
-        print("\n" + str(status_counter) + " albums processed.")
 
-    results = google_photos.mediaItems().list(pageSize=100, pageToken=nextpagetoken).execute()
+    results = google_photos.mediaItems().list(pageSize=results_per_page, pageToken=nextpagetoken).execute()
     all_my_photos += results.get('mediaItems', [])
     nextpagetoken = results.get('nextPageToken', '')
+
+    # Give an update on how many photos processed
+    print(str(len(all_my_photos)) + " photos in my albums processed.")
 
 # pprint.pprint(all_my_photos)
 
 for this_photo in all_my_photos:
     all_my_photos_ids.append(this_photo['id'])
 
-print(str(len(all_my_photos_ids)) + " my photos.")
-print(str(len(set(all_my_photos_ids))) + " unique my photos.")
+print("\n" + str(len(all_my_photos_ids)) + " photos in my albums.")
+print(str(len(set(all_my_photos_ids))) + " unique photos in my albums.")
 
 # https://developers.google.com/photos/library/reference/rest
 
@@ -149,33 +144,31 @@ print(str(len(set(all_my_photos_ids))) + " unique my photos.")
 # Get list of all my photos in all albums (mine and shared)
 all_photos_in_all_albums = []
 all_photos_in_all_albums_ids = []
-status_counter = 0
+results_per_page = 100
 
 print("\nGetting metadata about photos from all albums...")
 for this_album_id in all_albums_ids:
-    # print("\n\n##############################")
-    # print(this_album_id)
 
     # Search for the photos that have this albumId
     try:
         nextpagetoken = None
 
         while nextpagetoken != '':
-            status_counter += 1
-            if status_counter % 500 == 0:
-                print("\n" + str(status_counter) + " albums processed.")
 
-            results = google_photos.mediaItems().search(body={"albumId": this_album_id, "pageToken": nextpagetoken, "pageSize": 100}).execute()
+            results = google_photos.mediaItems().search(body={"albumId": this_album_id, "pageToken": nextpagetoken, "pageSize": results_per_page}).execute()
             # pprint.pprint(results)
             these_photos = results.get('mediaItems', [])
             nextpagetoken = results.get('nextPageToken', '')
 
             all_photos_in_all_albums.extend(results['mediaItems'])
 
-    except:
-        print("\nWARNING: No album for ID: " + this_album_id)
+            # Give an update on how many photos processed
+            print(str(len(all_photos_in_all_albums)) + " shared photos processed.")
 
-print(str(len(all_photos_in_all_albums)) + " photos in all albums\n\n")
+    except:
+        print("WARNING: No album for ID: " + this_album_id)
+
+print("\n" + str(len(all_photos_in_all_albums)) + " photos in all (mine and shared) albums\n\n")
 
 for this_photo in all_photos_in_all_albums:
     try:
@@ -226,7 +219,6 @@ with open('summary.html', 'w') as html:
     html.write("<h1>Shared albums</h1>")
     html.write("<table>")
     photo_count = 0
-    # pprint.pprint(shared_albums)
 
     html.write("<tr><th>Album name</th><th>Number of photos</th></tr>")
     for this_album in sorted([item for item in shared_albums if 'title' in item.keys()], key=lambda item: item['title']):
@@ -253,3 +245,5 @@ with open('summary.html', 'w') as html:
     html.write("</table>")
 
     html.write("</body></html>")
+
+    print("\n\nSummary page created - summary.html")
