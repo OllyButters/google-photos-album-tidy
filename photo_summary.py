@@ -7,6 +7,7 @@ import pprint
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from sqlalchemy import except_
 
 # Needs credentials.json from google before running
 
@@ -89,7 +90,7 @@ while nextpagetoken != '':
     shared_albums.extend(results['sharedAlbums'])
     nextpagetoken = results.get('nextPageToken', '')
 
-# pprint.pprint(shared_albums)
+## pprint.pprint(shared_albums)
 
 print(str(len(shared_albums)) + " shared albums found.\n")
 
@@ -100,6 +101,14 @@ for this_album in shared_albums:
         shared_albums_titles.append(this_album['title'])
     except:
         pass
+
+##    try:
+        ##fd
+ ##       temp = google_photos.sharedAlbums().get(id=this_album['id']).execute()
+ ##       pprint.pprint(temp)
+ ##   except:
+ ##       print("NA")
+ ##       pass
 
 # print("\n\nShared minus mine. (Albums shared with me.)")
 # print(list(set(shared_albums_titles) - set(my_albums_titles)))
@@ -189,18 +198,18 @@ print(str(len(uncategorised)) + " photos not in any albums.")
 
 # Make an HTML page with a summary of albums
 with open('summary.html', 'w') as html:
-    html.write("<html><head></head><body>")
+    html.write("<html><head><title>Google photos summary</title></head><body>")
 
     html.write("Updated: " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "<br/>")
 
-    html.write(str(len(all_my_photos_ids)) + " my photos.<br/>")
-    html.write(str(len(set(all_my_photos_ids))) + " unique my photos.<br/>")
+    html.write(str(len(all_my_photos_ids)) + " photos belonging to me.<br/>")
+    html.write(str(len(set(all_my_photos_ids))) + " unique photos belonging to me.<br/>")
 
-    html.write(str(len(my_albums)) + " my albums found.<br/>")
-    html.write(str(len(shared_albums)) + " shared albums found.<br/>")
+    html.write(str(len(my_albums)) + " albums belonging to me.<br/>")
+    html.write(str(len(shared_albums)) + " shared albums which I or someone else owns.<br/>")
 
-    html.write(str(len(all_photos_in_all_albums)) + " all photos in all albums (mine and shared).<br/>")
-    html.write(str(len(uncategorised)) + " my photos not in any albums (mine or shared).<br/>")
+    html.write(str(len(all_photos_in_all_albums)) + " photos in all albums (mine and shared).<br/>")
+    html.write(str(len(uncategorised)) + " photos of mine which are not in any albums (mine or shared).<br/>")
 
     # My albums
     html.write("<h1>My albums</h1>")
@@ -210,7 +219,7 @@ with open('summary.html', 'w') as html:
     html.write("<tr><th>Album name</th><th>Number of photos</th></tr>")
     for this_album in sorted([item for item in my_albums if 'title' in item.keys()], key=lambda item: item['title']):
         photo_count += int(this_album['mediaItemsCount'])
-        html.write("<tr><td>" + this_album['title'] + "</td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
+        html.write('<tr><td><a href="' + this_album['productUrl'] + '" target="_blank">' + this_album['title'] + "</a></td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
 
     html.write("<tr><td></td><td><strong>" + str(photo_count) + "</strong></td></tr>")
     html.write("<table>")
@@ -224,7 +233,7 @@ with open('summary.html', 'w') as html:
     for this_album in sorted([item for item in shared_albums if 'title' in item.keys()], key=lambda item: item['title']):
         try:
             photo_count += int(this_album['mediaItemsCount'])
-            html.write("<tr><td>" + this_album['title'] + "</td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
+            html.write('<tr><td><a href="' + this_album['productUrl'] + '" target="_blank">' + this_album['title'] + "</a></td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
         except:
             pass
     html.write("<tr><td></td><td><strong>" + str(photo_count) + "</strong></td></tr>")
@@ -243,6 +252,8 @@ with open('summary.html', 'w') as html:
             pass
 
     html.write("</table>")
+
+    html.write('<hr/> Made by Olly. Source code at <a href="https://github.com/OllyButters/google-photos-album-tidy">https://github.com/OllyButters/google-photos-album-tidy</a>')
 
     html.write("</body></html>")
 
