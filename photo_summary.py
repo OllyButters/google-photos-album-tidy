@@ -99,6 +99,17 @@ for this_album in shared_albums:
 # List of all unique albums
 all_albums_ids = list(set(my_albums_ids + shared_albums_ids))
 
+# If my album is also shared then flag it as so.
+for this_album in my_albums:
+    if this_album['id'] in shared_albums_ids:
+        this_album['shared'] = 'True'
+
+
+# Set of shared albums which do not contain any of my albums, used to filter the output table
+shared_album_ids_not_mine = list(set(shared_albums_ids).difference(set(my_albums_ids)))
+
+pprint.pprint(shared_album_ids_not_mine)
+print(str(len(shared_album_ids_not_mine)) + " shared albums not mine found.\n")
 
 ########################################################################################
 # Get all my photos
@@ -180,10 +191,9 @@ with open('summary.html', 'w') as html:
     html.write("Updated: " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "<br/>")
 
     html.write(str(len(all_my_photos_ids)) + " photos belonging to me.<br/>")
-    html.write(str(len(set(all_my_photos_ids))) + " unique photos belonging to me.<br/>")
 
     html.write(str(len(my_albums)) + " albums belonging to me.<br/>")
-    html.write(str(len(shared_albums)) + " shared albums which I or someone else owns.<br/>")
+    html.write(str(len(shared_albums)) + " shared albums which belong to me or someone else.<br/>")
 
     html.write(str(len(all_photos_in_all_albums)) + " photos in all albums (mine and shared).<br/>")
     html.write(str(len(uncategorised)) + " photos of mine which are not in any albums (mine or shared).<br/>")
@@ -193,26 +203,37 @@ with open('summary.html', 'w') as html:
     html.write("<table>")
     photo_count = 0
 
-    html.write("<tr><th>Album name</th><th>Number of photos</th></tr>")
+    html.write("<tr><th>Album name</th><th>Number of photos</th><th>Shared</th></tr>")
     for this_album in sorted([item for item in my_albums if 'title' in item.keys()], key=lambda item: item['title']):
         photo_count += int(this_album['mediaItemsCount'])
-        html.write('<tr><td><a href="' + this_album['productUrl'] + '" target="_blank">' + this_album['title'] + "</a></td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
+        html.write('<tr><td><a href="' + this_album['productUrl'] + '" target="_blank">' + this_album['title'] + "</a></td><td>" + this_album['mediaItemsCount'] + "</td>")
+
+        # Shared
+        try:
+            html.write("<td>" + this_album['shared'] + "</td>")
+        except:
+            html.write("<td></td>")
+
+        html.write("</tr>")
 
     html.write("<tr><td></td><td><strong>" + str(photo_count) + "</strong></td></tr>")
     html.write("<table>")
 
     # Shared albums
-    html.write("<h1>Shared albums</h1>")
+    html.write("<h1>Albums shared with me</h1>")
     html.write("<table>")
     photo_count = 0
 
     html.write("<tr><th>Album name</th><th>Number of photos</th></tr>")
     for this_album in sorted([item for item in shared_albums if 'title' in item.keys()], key=lambda item: item['title']):
-        try:
-            photo_count += int(this_album['mediaItemsCount'])
-            html.write('<tr><td><a href="' + this_album['productUrl'] + '" target="_blank">' + this_album['title'] + "</a></td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
-        except:
-            pass
+
+        # Only interested in albums which I do not own here.
+        if this_album['id'] in shared_album_ids_not_mine:
+            try:
+                photo_count += int(this_album['mediaItemsCount'])
+                html.write('<tr><td><a href="' + this_album['productUrl'] + '" target="_blank">' + this_album['title'] + "</a></td><td>" + this_album['mediaItemsCount'] + "</td></tr>")
+            except:
+                pass
     html.write("<tr><td></td><td><strong>" + str(photo_count) + "</strong></td></tr>")
     html.write("<table>")
 

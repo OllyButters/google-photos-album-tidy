@@ -30,5 +30,3 @@ Just run the photo_summary.py file, it will ask you to autheticate the first tim
 - https://developers.google.com/photos/library/reference/rest?hl=en_GB
 
 ## To do
-
-- Add flag to my albums to show if they are shared.
