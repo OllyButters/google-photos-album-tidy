@@ -7,7 +7,6 @@ import pprint
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from sqlalchemy import except_
 
 # Needs credentials.json from google before running
 
@@ -54,7 +53,6 @@ google_photos = build('photoslibrary', 'v1', credentials=credentials)
 # Get list of all my albums
 my_albums = []        # List of dicts with metadata about each album in it.
 my_albums_ids = []    # List of IDs of my albums
-my_albums_titles = []
 nextpagetoken = None
 
 print("Getting metadata about my albums...")
@@ -71,14 +69,11 @@ print(str(len(my_albums)) + " my albums found.\n")
 
 for this_album in my_albums:
     my_albums_ids.append(this_album['id'])
-    my_albums_titles.append(this_album['title'])
-
 
 ##################################################################
 # Get list of all shared albums
 shared_albums = []        # List of dicts with all metadata
 shared_albums_ids = []    # List of IDs
-shared_albums_titles = []
 
 print("Getting metadata about shared albums...")
 nextpagetoken = None
@@ -90,7 +85,7 @@ while nextpagetoken != '':
     shared_albums.extend(results['sharedAlbums'])
     nextpagetoken = results.get('nextPageToken', '')
 
-## pprint.pprint(shared_albums)
+# pprint.pprint(shared_albums)
 
 print(str(len(shared_albums)) + " shared albums found.\n")
 
@@ -98,24 +93,8 @@ for this_album in shared_albums:
     # A title is not always present
     try:
         shared_albums_ids.append(this_album['id'])
-        shared_albums_titles.append(this_album['title'])
     except:
         pass
-
-##    try:
-        ##fd
- ##       temp = google_photos.sharedAlbums().get(id=this_album['id']).execute()
- ##       pprint.pprint(temp)
- ##   except:
- ##       print("NA")
- ##       pass
-
-# print("\n\nShared minus mine. (Albums shared with me.)")
-# print(list(set(shared_albums_titles) - set(my_albums_titles)))
-
-# print("\n\nMine minus shared. (My albums which are not shared with anyone.)")
-# print(list(set(my_albums_titles) - set(shared_albums_titles)))
-
 
 # List of all unique albums
 all_albums_ids = list(set(my_albums_ids + shared_albums_ids))
@@ -145,8 +124,6 @@ for this_photo in all_my_photos:
 
 print("\n" + str(len(all_my_photos_ids)) + " photos in my albums.")
 print(str(len(set(all_my_photos_ids))) + " unique photos in my albums.")
-
-# https://developers.google.com/photos/library/reference/rest
 
 
 ########################################################################################
