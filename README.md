@@ -1,3 +1,7 @@
+Most of the google photos API calls used here have been deprecated or have had their scope so tightly contstrained that it is no longer possible for this method to work. See https://developers.google.com/photos/support/updates
+
+------------------------------
+
 # google-photos
 
 Olly Butters
